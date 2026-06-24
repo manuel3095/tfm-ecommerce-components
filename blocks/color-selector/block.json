@@ -1,0 +1,105 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 2,
+    "name": "tfm-ecommerce/color-selector",
+    "version": "1.0.0",
+    "title": "Selector de Colores TFM",
+    "category": "woocommerce",
+    "icon": "art",
+    "description": "Componente interactivo para la selección de colores en productos variables de WooCommerce. Muestra muestras de color visuales con disponibilidad de stock en tiempo real y actualiza el precio dinámicamente al seleccionar una variante.",
+    "keywords": [
+        "colores",
+        "selector",
+        "swatches",
+        "woocommerce",
+        "ecommerce",
+        "variaciones"
+    ],
+    "textdomain": "tfm-ecommerce",
+    "editorScript": "file:../../build/color-selector-editor.js",
+    "editorStyle": "file:../../build/color-selector-editor.css",
+    "style": "file:../../build/color-selector-style.css",
+    "attributes": {
+        "productId": {
+            "type": "number",
+            "default": 0
+        },
+        "showStock": {
+            "type": "boolean",
+            "default": true
+        },
+        "showPrice": {
+            "type": "boolean",
+            "default": true
+        },
+        "showColorName": {
+            "type": "boolean",
+            "default": true
+        },
+        "swatchSize": {
+            "type": "string",
+            "default": "medium",
+            "enum": ["small", "medium", "large"]
+        },
+        "swatchShape": {
+            "type": "string",
+            "default": "circle",
+            "enum": ["circle", "square", "rounded"]
+        },
+        "showLabel": {
+            "type": "boolean",
+            "default": true
+        },
+        "labelText": {
+            "type": "string",
+            "default": "Selecciona un color"
+        },
+        "align": {
+            "type": "string",
+            "default": "left",
+            "enum": ["left", "center", "right"]
+        },
+        "colorMap": {
+            "type": "object",
+            "default": {
+                "negro": "#000000",
+                "blanco": "#ffffff",
+                "rojo": "#e53935",
+                "azul": "#1e88e5",
+                "verde": "#43a047",
+                "amarillo": "#fdd835",
+                "gris": "#9e9e9e",
+                "rosa": "#e91e63",
+                "naranja": "#fb8c00",
+                "morado": "#8e24aa"
+            }
+        }
+    },
+    "supports": {
+        "html": false,
+        "reusable": true,
+        "lock": false,
+        "color": {
+            "background": true,
+            "text": true
+        },
+        "spacing": {
+            "margin": true,
+            "padding": true
+        },
+        "typography": {
+            "fontSize": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "productId": 1,
+            "showStock": true,
+            "showPrice": true,
+            "showColorName": true,
+            "swatchSize": "medium",
+            "swatchShape": "circle",
+            "labelText": "Selecciona un color"
+        }
+    }
+}
