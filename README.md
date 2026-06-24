@@ -96,3 +96,97 @@ git clone https://github.com/TU-USUARIO/tfm-ecommerce-components.git
 **1.** Descarga o clona el repositorio en tu equipo local.
 
 **2.** Sube la carpeta `tfm-ecommerce-components` al directorio:
+/wp-content/plugins/
+
+**3.** Activa el plugin desde el panel de WordPress en **Plugins → Plugins instalados**.
+
+---
+
+## Configuración y uso
+
+### Uso del Selector de Tallas
+
+**1.** Abre el editor de WordPress (Gutenberg) en una página o producto.
+
+**2.** Haz clic en el botón **+** para añadir un bloque nuevo.
+
+**3.** Busca **"Selector de Tallas TFM"** en el buscador de bloques.
+
+**4.** Inserta el bloque en la posición deseada de la página.
+
+**5.** En el panel lateral derecho (**Inspector de bloque**) configura:
+
+   - **ID del producto WooCommerce:** Introduce el ID numérico del producto variable. Puedes encontrarlo en WooCommerce → Productos → al pasar el cursor sobre el producto verás el ID.
+   - **Mostrar disponibilidad de stock:** Activa o desactiva el indicador de stock.
+   - **Mostrar precio actualizado:** Activa o desactiva la actualización dinámica del precio.
+   - **Estilo visual:** Por defecto, Minimalista o Con borde.
+   - **Tamaño de botones:** Pequeño, Mediano o Grande.
+   - **Columnas:** Número de columnas en la cuadrícula (2-8).
+   - **Alineación:** Izquierda, Centro o Derecha.
+   - **Etiqueta:** Texto visible encima del selector.
+
+**6.** Publica o actualiza la página para ver el componente en el frontend.
+
+### Uso del Selector de Colores
+
+Los pasos son idénticos al Selector de Tallas. Busca **"Selector de Colores TFM"** en el buscador de bloques.
+
+**Configuración adicional del Selector de Colores:**
+
+- **Forma de las muestras:** Circular, Cuadrada o Redondeada.
+- **Tamaño de las muestras:** Pequeño (36px), Mediano (44px) o Grande (56px).
+- **Mostrar nombre del color:** Activa el tooltip con el nombre del color.
+- **Mapa de colores:** Personaliza la asociación entre nombre de atributo y código hexadecimal de color.
+
+---
+
+## Desarrollo local
+
+### Requisitos previos
+
+- [LocalWP](https://localwp.com/) o cualquier entorno local de WordPress
+- Node.js 16.0 o superior
+- npm 8.0 o superior
+- WooCommerce instalado y activo
+
+### Configuración del entorno de desarrollo
+
+**1.** Clona el repositorio en la carpeta de plugins de tu instalación local:
+
+```bash
+cd /ruta/a/tu/wordpress/wp-content/plugins/
+git clone https://github.com/TU-USUARIO/tfm-ecommerce-components.git
+cd tfm-ecommerce-components
+```
+
+**2.** Instala las dependencias de Node.js:
+
+```bash
+npm install
+```
+
+**3.** Compila los assets en modo desarrollo con recarga automática:
+
+```bash
+npm run start
+```
+
+**4.** Para compilar en modo producción:
+
+```bash
+npm run build
+```
+
+### Scripts disponibles
+
+| Script | Descripción |
+|--------|-------------|
+| `npm run start` | Compilación en modo desarrollo con watch |
+| `npm run build` | Compilación optimizada para producción |
+| `npm run lint:js` | Análisis estático de JavaScript (WPCS) |
+| `npm run lint:css` | Análisis estático de CSS |
+| `npm run lint:php` | Análisis estático de PHP (WordPress Coding Standards) |
+
+---
+
+## Arquitectura del sistema
