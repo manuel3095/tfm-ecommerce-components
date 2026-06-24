@@ -1,0 +1,322 @@
+/**
+ * Estilos globales de componentes del sistema de diseño
+ * Importa y extiende los Design Tokens definidos en tokens.css
+ * Aplica estilos base compartidos entre todos los componentes
+ *
+ * @package TFM_Ecommerce_Components
+ * @since 1.0.0
+ */
+
+/* =========================================================
+   RESET Y BASE
+   ========================================================= */
+
+.tfm-size-selector *,
+.tfm-color-selector * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.tfm-size-selector button,
+.tfm-color-selector button {
+    font-family: var(--tfm-font-family);
+    font-size: var(--tfm-font-size-base);
+    line-height: var(--tfm-line-height-normal);
+    border: none;
+    background: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* =========================================================
+   COMPONENTES COMPARTIDOS
+   ========================================================= */
+
+/* Indicador de carga compartido */
+.tfm-loading-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tfm-spacing-sm);
+    color: var(--tfm-color-text-secondary);
+    font-size: var(--tfm-font-size-sm);
+    padding: var(--tfm-spacing-md) 0;
+}
+
+.tfm-loading-indicator::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--tfm-color-border);
+    border-top-color: var(--tfm-color-primary);
+    border-radius: var(--tfm-border-radius-full);
+    animation: tfm-spin 0.8s linear infinite;
+}
+
+@keyframes tfm-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Mensaje de error compartido */
+.tfm-error-message {
+    display: flex;
+    align-items: center;
+    gap: var(--tfm-spacing-sm);
+    padding: var(--tfm-spacing-md) var(--tfm-spacing-lg);
+    background-color: var(--tfm-color-error-light);
+    border: 1px solid var(--tfm-color-error-border);
+    border-radius: var(--tfm-border-radius);
+    color: var(--tfm-color-error);
+    font-size: var(--tfm-font-size-sm);
+    line-height: var(--tfm-line-height-normal);
+}
+
+/* Mensaje de éxito compartido */
+.tfm-success-message {
+    display: flex;
+    align-items: center;
+    gap: var(--tfm-spacing-sm);
+    padding: var(--tfm-spacing-md) var(--tfm-spacing-lg);
+    background-color: var(--tfm-color-success-light);
+    border: 1px solid var(--tfm-color-success-border);
+    border-radius: var(--tfm-border-radius);
+    color: var(--tfm-color-success);
+    font-size: var(--tfm-font-size-sm);
+    line-height: var(--tfm-line-height-normal);
+}
+
+/* Mensaje de advertencia compartido */
+.tfm-warning-message {
+    display: flex;
+    align-items: center;
+    gap: var(--tfm-spacing-sm);
+    padding: var(--tfm-spacing-md) var(--tfm-spacing-lg);
+    background-color: var(--tfm-color-warning-light);
+    border: 1px solid var(--tfm-color-warning-border);
+    border-radius: var(--tfm-border-radius);
+    color: var(--tfm-color-warning);
+    font-size: var(--tfm-font-size-sm);
+    line-height: var(--tfm-line-height-normal);
+}
+
+/* =========================================================
+   SELECTOR DE COLORES
+   ========================================================= */
+
+.tfm-color-selector {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tfm-spacing-md);
+    font-family: var(--tfm-font-family);
+    width: 100%;
+}
+
+.tfm-color-selector__label {
+    font-size: var(--tfm-font-size-sm);
+    font-weight: var(--tfm-font-weight-semibold);
+    color: var(--tfm-color-text-primary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: var(--tfm-letter-spacing-wider);
+}
+
+.tfm-color-selector__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tfm-spacing-sm);
+}
+
+/* Botón de color circular */
+.tfm-color-selector__swatch {
+    position: relative;
+    width: var(--tfm-touch-target-min);
+    height: var(--tfm-touch-target-min);
+    border-radius: var(--tfm-border-radius-full);
+    border: 2px solid var(--tfm-color-border);
+    cursor: pointer;
+    transition: var(--tfm-transition-normal);
+    overflow: hidden;
+}
+
+.tfm-color-selector__swatch:hover {
+    transform: scale(1.1);
+    box-shadow: var(--tfm-shadow-md);
+    border-color: var(--tfm-color-primary);
+}
+
+.tfm-color-selector__swatch:focus-visible {
+    outline: 3px solid var(--tfm-color-primary);
+    outline-offset: 3px;
+}
+
+.tfm-color-selector__swatch--selected {
+    border-color: var(--tfm-color-primary);
+    box-shadow: var(--tfm-shadow-focus);
+}
+
+/* Marca de verificación en color seleccionado */
+.tfm-color-selector__swatch--selected::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: var(--tfm-font-weight-bold);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Color agotado */
+.tfm-color-selector__swatch--out-of-stock {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.tfm-color-selector__swatch--out-of-stock::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: rgba(0, 0, 0, 0.4);
+    transform: rotate(-45deg);
+}
+
+/* =========================================================
+   PRECIO DINÁMICO COMPARTIDO
+   ========================================================= */
+
+.tfm-price-display {
+    display: flex;
+    align-items: baseline;
+    gap: var(--tfm-spacing-sm);
+    min-height: 32px;
+    transition: var(--tfm-transition-normal);
+}
+
+.tfm-price-display__current {
+    font-size: var(--tfm-font-size-xl);
+    font-weight: var(--tfm-font-weight-bold);
+    color: var(--tfm-color-price);
+    line-height: var(--tfm-line-height-tight);
+}
+
+.tfm-price-display__original {
+    font-size: var(--tfm-font-size-md);
+    font-weight: var(--tfm-font-weight-normal);
+    color: var(--tfm-color-price-original);
+    text-decoration: line-through;
+}
+
+.tfm-price-display__sale {
+    color: var(--tfm-color-price-sale);
+}
+
+.tfm-price-display__placeholder {
+    font-size: var(--tfm-font-size-sm);
+    color: var(--tfm-color-text-placeholder);
+    font-style: italic;
+    align-self: center;
+}
+
+/* =========================================================
+   INDICADORES DE STOCK COMPARTIDOS
+   ========================================================= */
+
+.tfm-stock-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tfm-spacing-1);
+    padding: 2px var(--tfm-spacing-sm);
+    border-radius: var(--tfm-border-radius-full);
+    font-size: var(--tfm-font-size-xs);
+    font-weight: var(--tfm-font-weight-semibold);
+    line-height: var(--tfm-line-height-tight);
+    text-transform: uppercase;
+    letter-spacing: var(--tfm-letter-spacing-wider);
+}
+
+.tfm-stock-badge--in-stock {
+    background-color: var(--tfm-color-success-light);
+    color: var(--tfm-color-success);
+    border: 1px solid var(--tfm-color-success-border);
+}
+
+.tfm-stock-badge--low-stock {
+    background-color: var(--tfm-color-warning-light);
+    color: var(--tfm-color-warning);
+    border: 1px solid var(--tfm-color-warning-border);
+}
+
+.tfm-stock-badge--out-of-stock {
+    background-color: var(--tfm-color-error-light);
+    color: var(--tfm-color-error);
+    border: 1px solid var(--tfm-color-error-border);
+}
+
+/* =========================================================
+   UTILIDADES DE ACCESIBILIDAD
+   ========================================================= */
+
+/* Clase para ocultar visualmente pero mantener accesible */
+.tfm-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Mostrar solo en foco para navegación por teclado */
+.tfm-sr-only-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+}
+
+/* =========================================================
+   RESPONSIVE COMPARTIDO
+   ========================================================= */
+
+@media (min-width: 768px) {
+    .tfm-color-selector__grid {
+        gap: var(--tfm-spacing-md);
+    }
+
+    .tfm-color-selector__swatch {
+        width: 52px;
+        height: 52px;
+    }
+}
+
+/* =========================================================
+   REDUCCIÓN DE MOVIMIENTO
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .tfm-loading-indicator::before {
+        animation: none;
+    }
+
+    .tfm-color-selector__swatch,
+    .tfm-price-display {
+        transition: none;
+    }
+
+    .tfm-color-selector__swatch:hover {
+        transform: none;
+    }
+}
