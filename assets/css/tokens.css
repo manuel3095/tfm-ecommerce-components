@@ -1,0 +1,263 @@
+/**
+ * Design Tokens del Sistema de Componentes TFM Ecommerce
+ * Implementados como CSS Custom Properties (Variables CSS)
+ * Constituyen la capa de abstracción visual del sistema de diseño
+ * basado en los principios de Atomic Design (Frost, 2016)
+ *
+ * Estructura de tokens:
+ * - Color: paleta primaria, secundaria, semántica y neutrales
+ * - Tipografía: familias, tamaños, pesos y alturas de línea
+ * - Espaciado: escala de espaciado consistente
+ * - Bordes: radios y grosores
+ * - Sombras: elevación y profundidad
+ * - Transiciones: duraciones y funciones de tiempo
+ *
+ * @package TFM_Ecommerce_Components
+ * @since 1.0.0
+ */
+
+:root {
+
+    /* =====================================================
+       TOKENS DE COLOR — PALETA PRIMARIA
+       Basada en el azul corporativo de WordPress #0073aa
+       ===================================================== */
+
+    --tfm-color-primary:          #0073aa;
+    --tfm-color-primary-dark:     #005588;
+    --tfm-color-primary-darker:   #003d66;
+    --tfm-color-primary-light:    #e8f4fd;
+    --tfm-color-primary-lighter:  #f0f8ff;
+
+    /* Paleta secundaria — verde de confirmación */
+    --tfm-color-secondary:        #00a32a;
+    --tfm-color-secondary-dark:   #007a1f;
+    --tfm-color-secondary-light:  #e6f7ec;
+
+    /* =====================================================
+       TOKENS DE COLOR — SEMÁNTICOS
+       Comunican significado al usuario
+       ===================================================== */
+
+    /* Éxito — stock disponible */
+    --tfm-color-success:          #2e7d32;
+    --tfm-color-success-light:    #e8f5e9;
+    --tfm-color-success-border:   #a5d6a7;
+
+    /* Advertencia — stock bajo */
+    --tfm-color-warning:          #e65100;
+    --tfm-color-warning-light:    #fff3e0;
+    --tfm-color-warning-border:   #ffcc80;
+
+    /* Error — agotado o error del sistema */
+    --tfm-color-error:            #c62828;
+    --tfm-color-error-light:      #ffebee;
+    --tfm-color-error-border:     #ef9a9a;
+
+    /* Información */
+    --tfm-color-info:             #0277bd;
+    --tfm-color-info-light:       #e1f5fe;
+
+    /* =====================================================
+       TOKENS DE COLOR — PRECIO
+       ===================================================== */
+
+    --tfm-color-price:            #1a1a1a;
+    --tfm-color-price-sale:       #c62828;
+    --tfm-color-price-original:   #757575;
+
+    /* =====================================================
+       TOKENS DE COLOR — NEUTROS
+       Escala de grises para fondos, bordes y textos
+       ===================================================== */
+
+    --tfm-color-neutral-0:        #ffffff;
+    --tfm-color-neutral-50:       #fafafa;
+    --tfm-color-neutral-100:      #f5f5f5;
+    --tfm-color-neutral-200:      #eeeeee;
+    --tfm-color-neutral-300:      #e0e0e0;
+    --tfm-color-neutral-400:      #bdbdbd;
+    --tfm-color-neutral-500:      #9e9e9e;
+    --tfm-color-neutral-600:      #757575;
+    --tfm-color-neutral-700:      #616161;
+    --tfm-color-neutral-800:      #424242;
+    --tfm-color-neutral-900:      #212121;
+    --tfm-color-neutral-1000:     #000000;
+
+    /* =====================================================
+       TOKENS DE COLOR — ROLES SEMÁNTICOS DE UI
+       Mapean los neutrales a roles específicos de interfaz
+       ===================================================== */
+
+    /* Fondos */
+    --tfm-color-background:           var(--tfm-color-neutral-0);
+    --tfm-color-background-subtle:    var(--tfm-color-neutral-50);
+    --tfm-color-background-muted:     var(--tfm-color-neutral-100);
+    --tfm-color-background-disabled:  var(--tfm-color-neutral-100);
+
+    /* Bordes */
+    --tfm-color-border:               var(--tfm-color-neutral-300);
+    --tfm-color-border-strong:        var(--tfm-color-neutral-500);
+    --tfm-color-border-disabled:      var(--tfm-color-neutral-200);
+
+    /* Texto */
+    --tfm-color-text-primary:         var(--tfm-color-neutral-900);
+    --tfm-color-text-secondary:       var(--tfm-color-neutral-600);
+    --tfm-color-text-disabled:        var(--tfm-color-neutral-500);
+    --tfm-color-text-inverse:         var(--tfm-color-neutral-0);
+    --tfm-color-text-placeholder:     var(--tfm-color-neutral-500);
+
+    /* =====================================================
+       TOKENS DE COLOR — MODO OSCURO
+       ===================================================== */
+
+    --tfm-color-background-dark:      #1e1e1e;
+    --tfm-color-background-dark-subtle: #2a2a2a;
+    --tfm-color-text-dark:            #e0e0e0;
+    --tfm-color-border-dark:          #444444;
+    --tfm-color-primary-dark-mode:    #1a5276;
+
+    /* =====================================================
+       TOKENS DE TIPOGRAFÍA
+       ===================================================== */
+
+    /* Familia tipográfica */
+    --tfm-font-family:        -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                               Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --tfm-font-family-mono:   'SFMono-Regular', Consolas, 'Liberation Mono',
+                               Menlo, Courier, monospace;
+
+    /* Escala de tamaños tipográficos */
+    --tfm-font-size-xs:       11px;
+    --tfm-font-size-sm:       13px;
+    --tfm-font-size-base:     14px;
+    --tfm-font-size-md:       16px;
+    --tfm-font-size-lg:       18px;
+    --tfm-font-size-xl:       20px;
+    --tfm-font-size-2xl:      24px;
+    --tfm-font-size-3xl:      30px;
+
+    /* Pesos tipográficos */
+    --tfm-font-weight-normal:    400;
+    --tfm-font-weight-medium:    500;
+    --tfm-font-weight-semibold:  600;
+    --tfm-font-weight-bold:      700;
+
+    /* Alturas de línea */
+    --tfm-line-height-tight:    1.25;
+    --tfm-line-height-snug:     1.375;
+    --tfm-line-height-normal:   1.5;
+    --tfm-line-height-relaxed:  1.625;
+
+    /* Espaciado entre letras */
+    --tfm-letter-spacing-tight:   -0.025em;
+    --tfm-letter-spacing-normal:   0em;
+    --tfm-letter-spacing-wide:     0.025em;
+    --tfm-letter-spacing-wider:    0.05em;
+    --tfm-letter-spacing-widest:   0.1em;
+
+    /* =====================================================
+       TOKENS DE ESPACIADO
+       Escala basada en múltiplos de 4px
+       ===================================================== */
+
+    --tfm-spacing-1:    4px;
+    --tfm-spacing-2:    8px;
+    --tfm-spacing-3:    12px;
+    --tfm-spacing-4:    16px;
+    --tfm-spacing-5:    20px;
+    --tfm-spacing-6:    24px;
+    --tfm-spacing-8:    32px;
+    --tfm-spacing-10:   40px;
+    --tfm-spacing-12:   48px;
+    --tfm-spacing-16:   64px;
+
+    /* Alias semánticos de espaciado */
+    --tfm-spacing-xs:   var(--tfm-spacing-1);
+    --tfm-spacing-sm:   var(--tfm-spacing-2);
+    --tfm-spacing-md:   var(--tfm-spacing-3);
+    --tfm-spacing-lg:   var(--tfm-spacing-4);
+    --tfm-spacing-xl:   var(--tfm-spacing-6);
+    --tfm-spacing-2xl:  var(--tfm-spacing-8);
+
+    /* =====================================================
+       TOKENS DE BORDES
+       ===================================================== */
+
+    /* Radios de borde */
+    --tfm-border-radius-none:   0px;
+    --tfm-border-radius-sm:     2px;
+    --tfm-border-radius:        4px;
+    --tfm-border-radius-md:     6px;
+    --tfm-border-radius-lg:     8px;
+    --tfm-border-radius-xl:     12px;
+    --tfm-border-radius-full:   9999px;
+
+    /* Grosores de borde */
+    --tfm-border-width-thin:    1px;
+    --tfm-border-width:         2px;
+    --tfm-border-width-thick:   3px;
+
+    /* =====================================================
+       TOKENS DE SOMBRAS
+       ===================================================== */
+
+    --tfm-shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.05);
+    --tfm-shadow:       0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --tfm-shadow-md:    0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+    --tfm-shadow-lg:    0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+    --tfm-shadow-xl:    0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+    --tfm-shadow-focus: 0 0 0 3px rgba(0, 115, 170, 0.4);
+
+    /* =====================================================
+       TOKENS DE TRANSICIÓN
+       ===================================================== */
+
+    /* Duraciones */
+    --tfm-duration-fast:    100ms;
+    --tfm-duration-normal:  200ms;
+    --tfm-duration-slow:    300ms;
+    --tfm-duration-slower:  500ms;
+
+    /* Funciones de tiempo */
+    --tfm-ease-linear:      linear;
+    --tfm-ease-in:          cubic-bezier(0.4, 0, 1, 1);
+    --tfm-ease-out:         cubic-bezier(0, 0, 0.2, 1);
+    --tfm-ease-in-out:      cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Transiciones compuestas */
+    --tfm-transition-fast:   all var(--tfm-duration-fast) var(--tfm-ease-out);
+    --tfm-transition-normal: all var(--tfm-duration-normal) var(--tfm-ease-out);
+    --tfm-transition-slow:   all var(--tfm-duration-slow) var(--tfm-ease-in-out);
+
+    /* =====================================================
+       TOKENS DE LAYOUT
+       ===================================================== */
+
+    /* Columnas del selector */
+    --tfm-columns:              4;
+    --tfm-columns-mobile:       3;
+    --tfm-columns-tablet:       5;
+    --tfm-columns-desktop:      6;
+
+    /* Tamaños mínimos de área táctil (WCAG 2.1) */
+    --tfm-touch-target-min:     44px;
+    --tfm-touch-target-sm:      36px;
+    --tfm-touch-target-lg:      56px;
+
+    /* Anchos máximos de contenedor */
+    --tfm-max-width-sm:         480px;
+    --tfm-max-width-md:         768px;
+    --tfm-max-width-lg:         1024px;
+    --tfm-max-width-xl:         1280px;
+
+    /* =====================================================
+       TOKENS DE Z-INDEX
+       ===================================================== */
+
+    --tfm-z-index-dropdown:     100;
+    --tfm-z-index-sticky:       200;
+    --tfm-z-index-modal:        300;
+    --tfm-z-index-tooltip:      400;
+    --tfm-z-index-toast:        500;
+}
