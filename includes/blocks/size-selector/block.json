@@ -1,0 +1,91 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 2,
+    "name": "tfm-ecommerce/size-selector",
+    "version": "1.0.0",
+    "title": "Selector de Tallas TFM",
+    "category": "woocommerce",
+    "icon": "grid-view",
+    "description": "Componente interactivo para la selección de tallas en productos variables de WooCommerce. Muestra disponibilidad de stock en tiempo real y actualiza el precio dinámicamente al seleccionar una variante.",
+    "keywords": [
+        "tallas",
+        "selector",
+        "woocommerce",
+        "ecommerce",
+        "variaciones"
+    ],
+    "textdomain": "tfm-ecommerce",
+    "editorScript": "file:../../build/size-selector-editor.js",
+    "editorStyle": "file:../../build/size-selector-editor.css",
+    "style": "file:../../build/size-selector-style.css",
+    "attributes": {
+        "productId": {
+            "type": "number",
+            "default": 0
+        },
+        "showStock": {
+            "type": "boolean",
+            "default": true
+        },
+        "showPrice": {
+            "type": "boolean",
+            "default": true
+        },
+        "style": {
+            "type": "string",
+            "default": "default",
+            "enum": ["default", "minimal", "outlined"]
+        },
+        "columns": {
+            "type": "number",
+            "default": 4,
+            "minimum": 2,
+            "maximum": 8
+        },
+        "buttonSize": {
+            "type": "string",
+            "default": "medium",
+            "enum": ["small", "medium", "large"]
+        },
+        "showLabel": {
+            "type": "boolean",
+            "default": true
+        },
+        "labelText": {
+            "type": "string",
+            "default": "Selecciona tu talla"
+        },
+        "align": {
+            "type": "string",
+            "default": "left",
+            "enum": ["left", "center", "right"]
+        }
+    },
+    "supports": {
+        "html": false,
+        "reusable": true,
+        "lock": false,
+        "color": {
+            "background": true,
+            "text": true
+        },
+        "spacing": {
+            "margin": true,
+            "padding": true
+        },
+        "typography": {
+            "fontSize": true
+        }
+    },
+    "example": {
+        "attributes": {
+            "productId": 1,
+            "showStock": true,
+            "showPrice": true,
+            "style": "default",
+            "columns": 4,
+            "buttonSize": "medium",
+            "labelText": "Selecciona tu talla"
+        }
+    }
+}
