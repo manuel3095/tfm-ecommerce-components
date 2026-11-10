@@ -1,0 +1,27 @@
+{
+  "name": "tfm-ecommerce-components",
+  "version": "1.1.0",
+  "description": "Bloques Gutenberg interactivos para WooCommerce (TFM UNIR)",
+  "author": "Manuel Jose Passo Pacheco",
+  "license": "GPL-2.0-or-later",
+  "private": true,
+  "scripts": {
+    "build": "wp-scripts build src/size-selector-editor.js src/color-selector-editor.js",
+    "start": "wp-scripts start src/size-selector-editor.js src/color-selector-editor.js",
+    "lint:js": "wp-scripts lint-js src assets/js",
+    "lint:css": "wp-scripts lint-style \"assets/css/*.css\" \"blocks/**/*.css\"",
+    "plugin-zip": "wp-scripts plugin-zip"
+  },
+  "files": [
+    "tfm-components.php",
+    "includes",
+    "blocks",
+    "assets",
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@wordpress/scripts": "^30.0.0"
+  }
+}

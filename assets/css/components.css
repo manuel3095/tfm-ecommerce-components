@@ -11,15 +11,15 @@
    RESET Y BASE
    ========================================================= */
 
-.tfm-size-selector *,
-.tfm-color-selector * {
+/* :where() mantiene la especificidad en cero para que los estilos
+   de cada componente (bordes, rellenos, fondos) prevalezcan sobre el reset */
+:where(.tfm-size-selector, .tfm-color-selector) * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-.tfm-size-selector button,
-.tfm-color-selector button {
+:where(.tfm-size-selector, .tfm-color-selector) button {
     font-family: var(--tfm-font-family);
     font-size: var(--tfm-font-size-base);
     line-height: var(--tfm-line-height-normal);
@@ -317,6 +317,50 @@
     }
 
     .tfm-color-selector__swatch:hover {
+        transform: none;
+    }
+}
+
+/* =========================================================
+   SELECTOR DE COLORES: VARIANTES DE FORMA Y TAMAÑO (v1.1.0)
+   ========================================================= */
+
+.tfm-color-selector.tfm-align-center { align-items: center; }
+.tfm-color-selector.tfm-align-right  { align-items: flex-end; }
+
+.tfm-color-selector--square .tfm-color-selector__swatch  { border-radius: 0; }
+.tfm-color-selector--rounded .tfm-color-selector__swatch { border-radius: var(--tfm-border-radius); }
+
+.tfm-color-selector--small .tfm-color-selector__swatch {
+    width: var(--tfm-touch-target-sm);
+    height: var(--tfm-touch-target-sm);
+}
+
+.tfm-color-selector--large .tfm-color-selector__swatch {
+    width: var(--tfm-touch-target-lg);
+    height: var(--tfm-touch-target-lg);
+}
+
+.tfm-color-selector__selected-name {
+    min-height: 1.5em;
+    font-size: var(--tfm-font-size-sm);
+    color: var(--tfm-color-text-secondary);
+}
+
+.tfm-color-selector__stock-message {
+    min-height: 1.5em;
+    font-size: var(--tfm-font-size-sm);
+    font-weight: var(--tfm-font-weight-semibold);
+}
+
+.tfm-color-selector__stock-message--in-stock     { color: var(--tfm-color-success); }
+.tfm-color-selector__stock-message--low-stock    { color: var(--tfm-color-warning); }
+.tfm-color-selector__stock-message--out-of-stock { color: var(--tfm-color-error); }
+
+@media (prefers-reduced-motion: reduce) {
+    .tfm-color-selector__swatch,
+    .tfm-color-selector__swatch:hover {
+        transition: none;
         transform: none;
     }
 }

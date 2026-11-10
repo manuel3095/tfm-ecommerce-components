@@ -62,19 +62,39 @@ foreach ( $variations as $variation ) {
         $size_value = $variation['attributes']['attribute_pa_talla'];
     }
 
-    if ( empty( $size_value ) || in_array( $size_value, $seen, true ) ) {
+    if ( empty( $size_value ) ) {
         continue;
     }
 
-    $seen[]  = $size_value;
-    $sizes[] = array(
+    // Una talla está disponible si alguna de sus variaciones tiene stock
+    $existing = array_search( $size_value, $seen, true );
+
+    if ( false !== $existing ) {
+        if ( $sizes[ $existing ]['in_stock'] || ! $variation['is_in_stock'] ) {
+            continue;
+        }
+    } else {
+        $existing = count( $seen );
+        $seen[]   = $size_value;
+    }
+
+    // Nombre legible de la talla (término de la taxonomía si existe)
+    $size_term  = taxonomy_exists( 'pa_size' ) ? get_term_by( 'slug', $size_value, 'pa_size' ) : false;
+    $size_label = $size_term ? $size_term->name : strtoupper( $size_value );
+
+    $sizes[ $existing ] = array(
         'size'         => sanitize_text_field( $size_value ),
+        'label'        => sanitize_text_field( $size_label ),
         'in_stock'     => (bool) $variation['is_in_stock'],
+        'stock_qty'    => isset( $variation['max_qty'] ) && '' !== $variation['max_qty'] ? absint( $variation['max_qty'] ) : null,
         'variation_id' => absint( $variation['variation_id'] ),
         'price_html'   => $variation['price_html'],
         'price'        => floatval( $variation['display_price'] ),
     );
 }
+
+ksort( $sizes );
+$sizes = array_values( $sizes );
 
 if ( empty( $sizes ) ) {
     return;
@@ -84,7 +104,7 @@ if ( empty( $sizes ) ) {
 $variations_json = wp_json_encode( $sizes );
 
 // Generar ID único para este bloque (permite múltiples bloques en la misma página)
-$block_id = 'tfm-size-selector-' . uniqid();
+$block_id = 'tfm-size-selector-' . wp_unique_id();
 
 // Clases CSS del contenedor principal
 $wrapper_classes = implode(
@@ -101,6 +121,7 @@ $wrapper_classes = implode(
 <div
     id="<?php echo esc_attr( $block_id ); ?>"
     class="<?php echo esc_attr( $wrapper_classes ); ?>"
+    data-tfm-selector="size"
     data-product-id="<?php echo esc_attr( $product_id ); ?>"
     data-variations="<?php echo esc_attr( $variations_json ); ?>"
     data-show-stock="<?php echo esc_attr( $show_stock ? 'true' : 'false' ); ?>"
@@ -132,12 +153,12 @@ $wrapper_classes = implode(
                 ? sprintf(
                     /* translators: %s: talla del producto */
                     __( 'Talla %s', 'tfm-ecommerce' ),
-                    $item['size']
+                    $item['label']
                 )
                 : sprintf(
                     /* translators: %s: talla del producto */
                     __( 'Talla %s - Agotada', 'tfm-ecommerce' ),
-                    $item['size']
+                    $item['label']
                 );
             ?>
             <button
@@ -154,7 +175,7 @@ $wrapper_classes = implode(
                 <?php disabled( ! $item['in_stock'] ); ?>
                 tabindex="<?php echo $item['in_stock'] ? '0' : '-1'; ?>"
             >
-                <?php echo esc_html( $item['size'] ); ?>
+                <?php echo esc_html( $item['label'] ); ?>
             </button>
         <?php endforeach; ?>
     </div>

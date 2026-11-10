@@ -23,7 +23,6 @@
     const config = window.tfmData || {
         nonce:   '',
         restUrl: '/wp-json/',
-        wcUrl:   '/wp-json/wc/v3/',
     };
 
     /**

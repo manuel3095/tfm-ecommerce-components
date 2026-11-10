@@ -141,7 +141,7 @@ class TFM_WC_Integration {
 
                 $variations[] = array(
                     'id'            => absint( $variation['variation_id'] ),
-                    'price'         => esc_html( $variation_obj->get_price_html() ),
+                    'price'         => wp_kses_post( $variation_obj->get_price_html() ),
                     'price_raw'     => floatval( $variation_obj->get_price() ),
                     'in_stock'      => (bool) $variation_obj->is_in_stock(),
                     'stock_qty'     => absint( $variation_obj->get_stock_quantity() ),

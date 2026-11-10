@@ -22,6 +22,20 @@ import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
+ * Convertir el precio HTML de WooCommerce en texto plano para la vista previa
+ *
+ * @param {string} html Precio formateado en HTML
+ * @return {string} Texto plano
+ */
+const htmlToText = ( html ) => {
+    if ( ! html ) {
+        return '';
+    }
+    const doc = new window.DOMParser().parseFromString( html, 'text/html' );
+    return doc.body.textContent || '';
+};
+
+/**
  * Componente principal de edición del bloque
  *
  * @param {Object} props Propiedades del bloque
@@ -99,13 +113,22 @@ export default function Edit( { attributes, setAttributes } ) {
                 variation.attributes[ 'attribute_talla' ] ||
                 variation.attributes[ 'attribute_pa_talla' ];
 
+            if ( sizeAttr && seen.has( sizeAttr ) && variation.in_stock ) {
+                const existing = sizes.find( ( s ) => s.size === sizeAttr );
+                if ( ! existing.inStock ) {
+                    existing.inStock     = true;
+                    existing.variationId = variation.id;
+                    existing.price       = htmlToText( variation.price );
+                }
+            }
+
             if ( sizeAttr && ! seen.has( sizeAttr ) ) {
                 seen.add( sizeAttr );
                 sizes.push( {
                     size:        sizeAttr,
                     inStock:     variation.in_stock,
                     variationId: variation.id,
-                    price:       variation.price,
+                    price:       htmlToText( variation.price ),
                 } );
             }
         } );

@@ -2,7 +2,7 @@
     "$schema": "https://schemas.wp.org/trunk/block.json",
     "apiVersion": 2,
     "name": "tfm-ecommerce/color-selector",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "title": "Selector de Colores TFM",
     "category": "woocommerce",
     "icon": "art",
@@ -17,8 +17,10 @@
     ],
     "textdomain": "tfm-ecommerce",
     "editorScript": "file:../../build/color-selector-editor.js",
-    "editorStyle": "file:../../build/color-selector-editor.css",
-    "style": "file:../../build/color-selector-style.css",
+    "editorStyle": [
+        "tfm-tokens",
+        "tfm-components"
+    ],
     "attributes": {
         "productId": {
             "type": "number",
@@ -39,12 +41,20 @@
         "swatchSize": {
             "type": "string",
             "default": "medium",
-            "enum": ["small", "medium", "large"]
+            "enum": [
+                "small",
+                "medium",
+                "large"
+            ]
         },
         "swatchShape": {
             "type": "string",
             "default": "circle",
-            "enum": ["circle", "square", "rounded"]
+            "enum": [
+                "circle",
+                "square",
+                "rounded"
+            ]
         },
         "showLabel": {
             "type": "boolean",
@@ -57,7 +67,11 @@
         "align": {
             "type": "string",
             "default": "left",
-            "enum": ["left", "center", "right"]
+            "enum": [
+                "left",
+                "center",
+                "right"
+            ]
         },
         "colorMap": {
             "type": "object",

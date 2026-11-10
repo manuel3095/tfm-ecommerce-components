@@ -105,7 +105,7 @@
     --tfm-color-text-secondary:       var(--tfm-color-neutral-600);
     --tfm-color-text-disabled:        var(--tfm-color-neutral-500);
     --tfm-color-text-inverse:         var(--tfm-color-neutral-0);
-    --tfm-color-text-placeholder:     var(--tfm-color-neutral-500);
+    --tfm-color-text-placeholder:     var(--tfm-color-neutral-600); /* 4.6:1 sobre blanco (WCAG 1.4.3) */
 
     /* =====================================================
        TOKENS DE COLOR — MODO OSCURO

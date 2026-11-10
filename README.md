@@ -2,7 +2,7 @@
 
 Plugin de WordPress con bloques nativos de Gutenberg para plataformas de Ecommerce basadas en WooCommerce.
 
-Desarrollado como Trabajo de Fin de Máster en **Diseño y Desarrollo de Interfaz de Usuario Web** — Universidad Internacional de La Rioja (UNIR) 2024.
+Desarrollado como Trabajo de Fin de Máster en **Diseño y Desarrollo de Interfaz de Usuario Web** — Universidad Internacional de La Rioja (UNIR).
 
 **Autor:** Manuel Jose Passo Pacheco  
 **Director/a:** Alejandra Zuleta Medina  
@@ -80,7 +80,7 @@ Componente interactivo de muestras de color para productos variables de WooComme
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/TU-USUARIO/tfm-ecommerce-components.git
+git clone https://github.com/manuel3095/tfm-ecommerce-components.git
 ```
 
 **2.** Accede al panel de administración de WordPress.
@@ -145,8 +145,8 @@ Los pasos son idénticos al Selector de Tallas. Busca **"Selector de Colores TFM
 ### Requisitos previos
 
 - [LocalWP](https://localwp.com/) o cualquier entorno local de WordPress
-- Node.js 16.0 o superior
-- npm 8.0 o superior
+- Node.js 18 o superior
+- npm 9 o superior
 - WooCommerce instalado y activo
 
 ### Configuración del entorno de desarrollo
@@ -155,7 +155,7 @@ Los pasos son idénticos al Selector de Tallas. Busca **"Selector de Colores TFM
 
 ```bash
 cd /ruta/a/tu/wordpress/wp-content/plugins/
-git clone https://github.com/TU-USUARIO/tfm-ecommerce-components.git
+git clone https://github.com/manuel3095/tfm-ecommerce-components.git
 cd tfm-ecommerce-components
 ```
 
@@ -185,8 +185,51 @@ npm run build
 | `npm run build` | Compilación optimizada para producción |
 | `npm run lint:js` | Análisis estático de JavaScript (WPCS) |
 | `npm run lint:css` | Análisis estático de CSS |
-| `npm run lint:php` | Análisis estático de PHP (WordPress Coding Standards) |
+| `npm run plugin-zip` | Genera el ZIP instalable del plugin |
 
 ---
 
 ## Arquitectura del sistema
+
+```
+tfm-ecommerce-components/
+├── tfm-components.php            # Punto de entrada: constantes, carga de clases e inicialización
+├── includes/
+│   ├── class-blocks.php          # Registro de bloques y recursos; carga condicional con has_block()
+│   ├── class-wc-integration.php  # Endpoints REST públicos tfm-ecommerce/v1 (variaciones y stock)
+│   └── class-security.php        # Sanitización, escapado y verificación de nonces
+├── blocks/
+│   ├── size-selector/            # block.json, render.php (renderizado dinámico) y style.css
+│   └── color-selector/           # block.json y render.php
+├── src/                          # Código fuente React de los bloques (editor)
+├── build/                        # Scripts del editor compilados con @wordpress/scripts
+└── assets/
+    ├── css/tokens.css            # Design Tokens (CSS Custom Properties)
+    ├── css/components.css        # Estilos compartidos y del selector de colores
+    ├── js/wc-api.js              # Fachada sobre la API REST del plugin (caché y reintentos)
+    └── js/frontend.js            # Interactividad (patrones Strategy y Observer)
+```
+
+### API REST del plugin
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/wp-json/tfm-ecommerce/v1/variations/{id}` | Variaciones de un producto variable (precio, stock, atributos). Pública, con caché de 1 h. |
+| GET | `/wp-json/tfm-ecommerce/v1/stock/{id}` | Stock actual de una variación. Pública, sin caché. |
+
+Los endpoints son de solo lectura y exponen únicamente datos que ya son públicos en la ficha de producto.
+
+### Verificación
+
+La versión 1.1.0 se ha verificado sobre WordPress 6.8.3 y WooCommerce 10.3.4:
+
+- Los dos bloques se registran y validan en el editor.
+- El frontend renderiza las tallas y colores, actualiza el precio, anuncia el stock y admite navegación por teclado.
+- Las páginas sin bloques no cargan ningún recurso del plugin.
+- Auditoría de accesibilidad de Lighthouse sobre la página de prueba: 100/100.
+
+---
+
+## Licencia
+
+GPL v2 o posterior. Consulta el archivo `LICENSE`.

@@ -1,16 +1,16 @@
 /**
  * JavaScript de interactividad del frontend
- * Gestiona los eventos de usuario en los componentes del plugin
- * Implementa los patrones Observer y Strategy para la comunicación
- * entre componentes independientes en la misma página
+ * Gestiona los eventos de usuario en los selectores de variantes del plugin.
  *
  * Patrones implementados:
- * - Observer: comunicación entre selector y carrito via CustomEvent
- * - Strategy: manejo diferenciado por tipo de atributo
- * - Module: encapsulación mediante IIFE
+ * - Strategy: cada tipo de selector (tallas, colores) define su propia
+ *   configuración (clases, atributo de datos, textos) y comparte la lógica común.
+ * - Observer: comunicación entre el selector y el resto de la página
+ *   mediante eventos personalizados (CustomEvent).
+ * - Module: encapsulación mediante IIFE.
  *
  * @package TFM_Ecommerce_Components
- * @since 1.0.0
+ * @since 1.1.0
  */
 
 ( function( window, document ) {
@@ -18,32 +18,45 @@
     'use strict';
 
     /**
-     * Módulo principal de interactividad del Selector de Tallas
+     * Estrategias por tipo de selector
      */
-    const TFMSizeSelector = {
+    const STRATEGIES = {
+        size: {
+            root:        '.tfm-size-selector',
+            prefix:      'tfm-size-selector',
+            option:      'tfm-size-selector__button',
+            valueKey:    'size',
+            eventName:   'tfm:sizeSelected',
+            describe:    button => button.dataset.size,
+        },
+        color: {
+            root:        '.tfm-color-selector',
+            prefix:      'tfm-color-selector',
+            option:      'tfm-color-selector__swatch',
+            valueKey:    'color',
+            eventName:   'tfm:colorSelected',
+            describe:    button => button.dataset.label || button.dataset.value,
+        },
+    };
+
+    /** Intervalo mínimo entre revalidaciones de stock (ms) */
+    const VALIDATION_INTERVAL = 30000;
+
+    const TFMVariantSelector = {
 
         /**
-         * Selector CSS para identificar los componentes en el DOM
-         *
-         * @type {string}
-         */
-        componentSelector: '.tfm-size-selector',
-
-        /**
-         * Inicializar todos los selectores de tallas en la página
-         * Se ejecuta cuando el DOM está completamente cargado
+         * Inicializar todos los selectores presentes en la página
          */
         init() {
-            const components = document.querySelectorAll(
-                this.componentSelector
-            );
-
-            if ( ! components.length ) {
-                return;
-            }
-
-            components.forEach( component => {
-                this.initComponent( component );
+            Object.keys( STRATEGIES ).forEach( type => {
+                const strategy = STRATEGIES[ type ];
+                document.querySelectorAll( strategy.root ).forEach( component => {
+                    if ( component.dataset.tfmReady ) {
+                        return;
+                    }
+                    component.dataset.tfmReady = 'true';
+                    this.initComponent( component, strategy );
+                } );
             } );
         },
 
@@ -51,384 +64,264 @@
          * Inicializar un componente individual
          *
          * @param {HTMLElement} component Elemento raíz del componente
+         * @param {Object} strategy Estrategia del tipo de selector
          */
-        initComponent( component ) {
-            const productId  = component.dataset.productId;
+        initComponent( component, strategy ) {
+            const productId  = parseInt( component.dataset.productId, 10 );
             const variations = this.parseVariations( component );
 
             if ( ! productId || ! variations.length ) {
                 return;
             }
 
-            // Inicializar botones de talla
-            this.initSizeButtons( component, variations );
-
-            // Inicializar validación de stock en foco
-            this.initStockValidation( component, productId );
+            this.initOptions( component, strategy, variations );
+            this.initStockValidation( component, strategy, productId );
         },
 
         /**
-         * Parsear las variaciones desde el atributo data del componente
+         * Leer las variaciones serializadas por PHP en data-variations
          *
          * @param {HTMLElement} component Elemento del componente
-         * @return {Array} Array de variaciones parseadas
+         * @return {Array} Variaciones
          */
         parseVariations( component ) {
             try {
-                const variationsData = component.dataset.variations;
-                return variationsData ? JSON.parse( variationsData ) : [];
+                const raw = component.dataset.variations;
+                return raw ? JSON.parse( raw ) : [];
             } catch ( error ) {
-                console.error(
-                    'TFM Frontend: Error al parsear variaciones:',
-                    error
-                );
+                console.error( 'TFM Frontend: error al leer las variaciones:', error );
                 return [];
             }
         },
 
         /**
-         * Inicializar los eventos de los botones de talla
+         * Registrar los eventos de clic y teclado de cada opción
          *
          * @param {HTMLElement} component Elemento del componente
-         * @param {Array} variations Array de variaciones disponibles
+         * @param {Object} strategy Estrategia del selector
+         * @param {Array} variations Variaciones disponibles
          */
-        initSizeButtons( component, variations ) {
-            const buttons    = component.querySelectorAll(
-                '.tfm-size-selector__button'
-            );
-            const priceEl    = component.querySelector(
-                '.tfm-size-selector__price'
-            );
-            const stockEl    = component.querySelector(
-                '.tfm-size-selector__stock-message'
-            );
-            const showPrice  = component.dataset.showPrice === 'true';
-            const showStock  = component.dataset.showStock === 'true';
+        initOptions( component, strategy, variations ) {
+            const options   = component.querySelectorAll( '.' + strategy.option );
+            const priceEl   = component.querySelector( '.' + strategy.prefix + '__price' );
+            const stockEl   = component.querySelector( '.' + strategy.prefix + '__stock-message' );
+            const nameEl    = component.querySelector( '.' + strategy.prefix + '__selected-name' );
+            const showPrice = component.dataset.showPrice === 'true';
+            const showStock = component.dataset.showStock === 'true';
 
-            buttons.forEach( button => {
-                // Evento de clic
-                button.addEventListener( 'click', ( event ) => {
+            options.forEach( option => {
+                option.addEventListener( 'click', event => {
                     event.preventDefault();
 
-                    if ( button.disabled || button.getAttribute( 'aria-disabled' ) === 'true' ) {
+                    if ( option.disabled || option.getAttribute( 'aria-disabled' ) === 'true' ) {
                         return;
                     }
 
-                    const selectedSize    = button.dataset.size;
-                    const variationId     = parseInt( button.dataset.variationId );
-                    const priceHtml       = button.dataset.priceHtml;
-                    const price           = parseFloat( button.dataset.price );
+                    const variationId = parseInt( option.dataset.variationId, 10 );
+                    const priceHtml   = option.dataset.priceHtml;
+                    const price       = parseFloat( option.dataset.price );
+                    const variation   = variations.find( v => v.variation_id === variationId );
 
-                    // Actualizar estado visual de los botones
-                    this.updateButtonStates( buttons, button );
+                    this.updateOptionStates( options, option, strategy );
 
-                    // Actualizar precio si está habilitado
+                    if ( nameEl ) {
+                        nameEl.textContent = strategy.describe( option );
+                    }
+
                     if ( showPrice && priceEl ) {
                         this.updatePrice( priceEl, priceHtml );
                     }
 
-                    // Actualizar mensaje de stock si está habilitado
-                    if ( showStock && stockEl ) {
-                        const variation = variations.find(
-                            v => v.variation_id === variationId
-                        );
-                        if ( variation ) {
-                            this.updateStockMessage(
-                                stockEl,
-                                variation.in_stock,
-                                variation.stock_qty
-                            );
-                        }
+                    if ( showStock && stockEl && variation ) {
+                        this.updateStockMessage( stockEl, strategy, variation.in_stock, variation.stock_qty );
                     }
 
-                    // Emitir evento personalizado para comunicación
-                    // con otros componentes (patrón Observer)
-                    this.dispatchSelectionEvent( component, {
-                        productId:   parseInt( component.dataset.productId ),
+                    this.dispatchSelectionEvent( component, strategy, {
+                        productId:   parseInt( component.dataset.productId, 10 ),
                         variationId: variationId,
-                        size:        selectedSize,
+                        attribute:   strategy.valueKey,
+                        value:       option.dataset[ strategy.valueKey ] || option.dataset.value,
                         price:       price,
                         priceHtml:   priceHtml,
                     } );
                 } );
 
-                // Navegación por teclado dentro del radiogroup
-                button.addEventListener( 'keydown', ( event ) => {
-                    this.handleKeyboardNavigation(
-                        event,
-                        buttons,
-                        button
-                    );
+                option.addEventListener( 'keydown', event => {
+                    this.handleKeyboardNavigation( event, options, option );
                 } );
             } );
         },
 
         /**
-         * Actualizar el estado visual de todos los botones
-         * después de una selección
-         *
-         * @param {NodeList} buttons Lista de todos los botones
-         * @param {HTMLElement} selectedButton Botón seleccionado
+         * Marcar la opción seleccionada (aria-checked y clase visual)
          */
-        updateButtonStates( buttons, selectedButton ) {
-            buttons.forEach( btn => {
-                const isSelected = btn === selectedButton;
-
-                btn.setAttribute( 'aria-checked', isSelected ? 'true' : 'false' );
-                btn.classList.toggle(
-                    'tfm-size-selector__button--selected',
-                    isSelected
-                );
+        updateOptionStates( options, selected, strategy ) {
+            options.forEach( option => {
+                const isSelected = option === selected;
+                option.setAttribute( 'aria-checked', isSelected ? 'true' : 'false' );
+                option.classList.toggle( strategy.option + '--selected', isSelected );
             } );
         },
 
         /**
-         * Actualizar el precio mostrado dinámicamente
-         *
-         * @param {HTMLElement} priceEl Elemento contenedor del precio
-         * @param {string} priceHtml HTML del precio formateado
+         * Actualizar el precio; la región aria-live lo anuncia
          */
         updatePrice( priceEl, priceHtml ) {
-            // Anunciar cambio a lectores de pantalla via aria-live
             priceEl.innerHTML = priceHtml;
             priceEl.classList.add( 'tfm-price-updated' );
-
-            setTimeout( () => {
-                priceEl.classList.remove( 'tfm-price-updated' );
-            }, 300 );
+            window.setTimeout( () => priceEl.classList.remove( 'tfm-price-updated' ), 300 );
         },
 
         /**
-         * Actualizar el mensaje de disponibilidad de stock
-         *
-         * @param {HTMLElement} stockEl Elemento del mensaje de stock
-         * @param {boolean} inStock Si hay stock disponible
-         * @param {number} stockQty Cantidad disponible
+         * Actualizar el mensaje de disponibilidad
          */
-        updateStockMessage( stockEl, inStock, stockQty ) {
-            // Limpiar clases anteriores
-            stockEl.classList.remove(
-                'tfm-size-selector__stock-message--in-stock',
-                'tfm-size-selector__stock-message--low-stock',
-                'tfm-size-selector__stock-message--out-of-stock'
-            );
+        updateStockMessage( stockEl, strategy, inStock, stockQty ) {
+            const base = strategy.prefix + '__stock-message';
 
-            if ( inStock ) {
-                if ( stockQty !== null && stockQty <= 5 ) {
-                    // Stock bajo
-                    stockEl.classList.add(
-                        'tfm-size-selector__stock-message--low-stock'
-                    );
-                    stockEl.textContent = `¡Solo quedan ${ stockQty } unidades!`;
-                } else {
-                    // Stock disponible
-                    stockEl.classList.add(
-                        'tfm-size-selector__stock-message--in-stock'
-                    );
-                    stockEl.textContent = 'En stock';
-                }
-            } else {
-                // Agotado
-                stockEl.classList.add(
-                    'tfm-size-selector__stock-message--out-of-stock'
-                );
+            stockEl.classList.remove( base + '--in-stock', base + '--low-stock', base + '--out-of-stock' );
+
+            if ( ! inStock ) {
+                stockEl.classList.add( base + '--out-of-stock' );
                 stockEl.textContent = 'Agotado';
+                return;
             }
+
+            if ( typeof stockQty === 'number' && stockQty > 0 && stockQty <= 5 ) {
+                stockEl.classList.add( base + '--low-stock' );
+                stockEl.textContent = stockQty === 1
+                    ? '¡Solo queda 1 unidad!'
+                    : `¡Solo quedan ${ stockQty } unidades!`;
+                return;
+            }
+
+            stockEl.classList.add( base + '--in-stock' );
+            stockEl.textContent = 'En stock';
         },
 
         /**
-         * Manejar navegación por teclado en el radiogroup
-         * Implementa el patrón de navegación ARIA para radiogroup
-         *
-         * @param {KeyboardEvent} event Evento de teclado
-         * @param {NodeList} buttons Lista de botones disponibles
-         * @param {HTMLElement} currentButton Botón actualmente enfocado
+         * Navegación por teclado del patrón ARIA radiogroup
          */
-        handleKeyboardNavigation( event, buttons, currentButton ) {
-            const enabledButtons = Array.from( buttons ).filter(
-                btn => ! btn.disabled
-            );
-            const currentIndex   = enabledButtons.indexOf( currentButton );
-
-            let nextIndex = null;
+        handleKeyboardNavigation( event, options, current ) {
+            const enabled = Array.from( options ).filter( option => ! option.disabled );
+            const index   = enabled.indexOf( current );
+            let next      = null;
 
             switch ( event.key ) {
                 case 'ArrowRight':
                 case 'ArrowDown':
-                    event.preventDefault();
-                    nextIndex = ( currentIndex + 1 ) % enabledButtons.length;
+                    next = ( index + 1 ) % enabled.length;
                     break;
-
                 case 'ArrowLeft':
                 case 'ArrowUp':
-                    event.preventDefault();
-                    nextIndex = ( currentIndex - 1 + enabledButtons.length ) %
-                        enabledButtons.length;
+                    next = ( index - 1 + enabled.length ) % enabled.length;
                     break;
-
                 case 'Home':
-                    event.preventDefault();
-                    nextIndex = 0;
+                    next = 0;
                     break;
-
                 case 'End':
-                    event.preventDefault();
-                    nextIndex = enabledButtons.length - 1;
+                    next = enabled.length - 1;
                     break;
-
                 case 'Enter':
                 case ' ':
                     event.preventDefault();
-                    currentButton.click();
+                    current.click();
                     return;
-
                 default:
                     return;
             }
 
-            if ( nextIndex !== null ) {
-                enabledButtons[ nextIndex ].focus();
-            }
+            event.preventDefault();
+            enabled[ next ].focus();
         },
 
         /**
-         * Emitir evento personalizado de selección
-         * Permite la comunicación con otros componentes (patrón Observer)
-         * El carrito de WooCommerce escucha este evento
-         *
-         * @param {HTMLElement} component Elemento del componente
-         * @param {Object} detail Datos de la selección
+         * Emitir eventos personalizados de selección (patrón Observer)
          */
-        dispatchSelectionEvent( component, detail ) {
-            const event = new CustomEvent( 'tfm:sizeSelected', {
+        dispatchSelectionEvent( component, strategy, detail ) {
+            component.dispatchEvent( new CustomEvent( strategy.eventName, {
                 bubbles:    true,
                 cancelable: true,
                 detail:     detail,
-            } );
+            } ) );
 
-            component.dispatchEvent( event );
             document.dispatchEvent( new CustomEvent( 'tfm:variationSelected', {
-                bubbles: false,
-                detail:  detail,
+                detail: detail,
             } ) );
         },
 
         /**
-         * Inicializar validación de stock en tiempo real
-         * Se activa cuando el componente recibe el foco
-         * para verificar disponibilidad antes de la compra
-         *
-         * @param {HTMLElement} component Elemento del componente
-         * @param {number} productId ID del producto
+         * Revalidar el stock contra la API cuando el componente recibe el foco
          */
-        initStockValidation( component, productId ) {
+        initStockValidation( component, strategy, productId ) {
             let lastValidated = 0;
-            const VALIDATION_INTERVAL = 30000; // 30 segundos
 
             component.addEventListener( 'focusin', async () => {
                 const now = Date.now();
 
-                // Evitar validaciones demasiado frecuentes
-                if ( now - lastValidated < VALIDATION_INTERVAL ) {
+                if ( ! window.TFMWcApi || now - lastValidated < VALIDATION_INTERVAL ) {
                     return;
                 }
 
                 lastValidated = now;
 
                 try {
-                    // Revalidar variaciones desde la API
-                    const freshVariations = await window.TFMWcApi
-                        .getProductVariations( productId );
+                    const fresh = await window.TFMWcApi.getProductVariations( productId );
 
-                    if ( ! freshVariations || ! freshVariations.length ) {
+                    if ( ! Array.isArray( fresh ) || ! fresh.length ) {
                         return;
                     }
 
-                    // Actualizar estado visual de botones según stock actual
-                    const buttons = component.querySelectorAll(
-                        '.tfm-size-selector__button'
-                    );
-
-                    buttons.forEach( button => {
-                        const variationId = parseInt( button.dataset.variationId );
-                        const variation   = freshVariations.find(
-                            v => v.id === variationId
+                    component.querySelectorAll( '.' + strategy.option ).forEach( option => {
+                        const variation = fresh.find(
+                            v => v.id === parseInt( option.dataset.variationId, 10 )
                         );
 
                         if ( ! variation ) {
                             return;
                         }
 
-                        if ( ! variation.in_stock ) {
-                            button.disabled = true;
-                            button.setAttribute( 'aria-disabled', 'true' );
-                            button.setAttribute( 'tabindex', '-1' );
-                            button.classList.add(
-                                'tfm-size-selector__button--out-of-stock'
-                            );
-                        } else {
-                            button.disabled = false;
-                            button.setAttribute( 'aria-disabled', 'false' );
-                            button.setAttribute( 'tabindex', '0' );
-                            button.classList.remove(
-                                'tfm-size-selector__button--out-of-stock'
-                            );
-                        }
-                    } );
+                        const available = Boolean( variation.in_stock );
 
+                        option.disabled = ! available;
+                        option.setAttribute( 'aria-disabled', available ? 'false' : 'true' );
+                        option.setAttribute( 'tabindex', available ? '0' : '-1' );
+                        option.classList.toggle( strategy.option + '--out-of-stock', ! available );
+                    } );
                 } catch ( error ) {
-                    // Fallar silenciosamente en validaciones de stock
-                    console.warn(
-                        'TFM Frontend: No se pudo revalidar stock:',
-                        error
-                    );
+                    console.warn( 'TFM Frontend: no se pudo revalidar el stock:', error );
                 }
             } );
         },
-
     };
 
     /**
-     * Escuchar eventos de selección para actualizar el carrito
-     * de WooCommerce (integración patrón Observer)
+     * Integración con el formulario de variaciones de WooCommerce:
+     * actualiza el campo variation_id para que «Añadir al carrito» funcione.
      */
-    document.addEventListener( 'tfm:variationSelected', ( event ) => {
+    document.addEventListener( 'tfm:variationSelected', event => {
         const { variationId, productId } = event.detail;
+        const form = document.querySelector( `form.cart[data-product_id="${ productId }"]` );
 
-        // Actualizar el input hidden de variación en el formulario
-        // de WooCommerce para que el botón "Añadir al carrito" funcione
-        const addToCartForm = document.querySelector(
-            `form.cart[data-product_id="${ productId }"]`
-        );
+        if ( ! form ) {
+            return;
+        }
 
-        if ( addToCartForm ) {
-            const variationInput = addToCartForm.querySelector(
-                'input[name="variation_id"]'
-            );
+        const input = form.querySelector( 'input[name="variation_id"]' );
 
-            if ( variationInput ) {
-                variationInput.value = variationId;
-
-                // Disparar evento change para que WooCommerce
-                // actualice el botón de compra
-                variationInput.dispatchEvent( new Event( 'change' ) );
-            }
+        if ( input ) {
+            input.value = variationId;
+            input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
         }
     } );
 
-    /**
-     * Inicializar cuando el DOM esté listo
-     */
     if ( document.readyState === 'loading' ) {
-        document.addEventListener(
-            'DOMContentLoaded',
-            () => TFMSizeSelector.init()
-        );
+        document.addEventListener( 'DOMContentLoaded', () => TFMVariantSelector.init() );
     } else {
-        TFMSizeSelector.init();
+        TFMVariantSelector.init();
     }
 
-    // Exponer módulo globalmente para extensibilidad
-    window.TFMSizeSelector = TFMSizeSelector;
+    // Exponer el módulo para extensibilidad (alias retrocompatible)
+    window.TFMVariantSelector = TFMVariantSelector;
+    window.TFMSizeSelector    = TFMVariantSelector;
 
 } )( window, document );

@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: TFM Ecommerce Components
- * Plugin URI: https://github.com/TU-USUARIO/tfm-ecommerce-components
- * Description: Sistema de componentes interactivos reutilizables para plataformas de Ecommerce basadas en WordPress. Desarrollado como Trabajo de Fin de Máster en Diseño y Desarrollo de Interfaz de Usuario Web - UNIR 2024.
- * Version: 1.0.0
+ * Plugin URI: https://github.com/manuel3095/tfm-ecommerce-components
+ * Description: Sistema de componentes interactivos reutilizables para plataformas de Ecommerce basadas en WordPress. Desarrollado como Trabajo Fin de Máster en Diseño y Desarrollo de Interfaz de Usuario Web (UNIR).
+ * Version: 1.1.0
  * Author: Manuel Jose Passo Pacheco
  * Author URI: https://uniguajira.edu.co
  * License: GPL v2 or later
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TFM_VERSION', '1.0.0' );
+define( 'TFM_VERSION', '1.1.0' );
 define( 'TFM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TFM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
