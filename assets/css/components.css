@@ -364,3 +364,28 @@
         transform: none;
     }
 }
+
+/* =========================================================
+   DISPONIBILIDAD CRUZADA Y FORMULARIO GESTIONADO (1.2.0)
+   ========================================================= */
+
+/* Opción con stock, pero no con la selección actual del otro atributo.
+   Sigue siendo pulsable: al elegirla se libera el atributo incompatible. */
+.tfm-size-selector .tfm-size-selector__button--unavailable {
+    border-style: dashed;
+    background-color: var(--tfm-color-neutral-50);
+    color: var(--tfm-color-neutral-700);
+}
+
+.tfm-color-selector .tfm-color-selector__swatch--unavailable {
+    outline: 2px dashed var(--tfm-color-neutral-600);
+    outline-offset: 2px;
+}
+
+/* Los selectores del plugin sustituyen a los desplegables de WooCommerce,
+   que siguen funcionando de forma oculta como fuente de verdad del carrito */
+.tfm-managed-form table.variations,
+.tfm-managed-form .woocommerce-variation-price,
+.tfm-managed-form .woocommerce-variation-availability {
+    display: none;
+}

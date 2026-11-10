@@ -123,6 +123,39 @@ class TFM_Blocks {
     }
 
     /**
+     * Matriz completa de variaciones de un producto.
+     *
+     * Cada selector agrupa las variaciones por su propio atributo; el script
+     * del frontend necesita además todas las combinaciones para resolver la
+     * variación exacta cuando el usuario elige talla y color.
+     *
+     * @param WC_Product_Variable $product Producto variable
+     * @return array Lista de variaciones con atributos, stock y precio
+     */
+    public static function get_variation_matrix( $product ) {
+        $matrix = array();
+
+        foreach ( $product->get_available_variations() as $variation ) {
+            $attributes = array();
+
+            foreach ( (array) $variation['attributes'] as $key => $value ) {
+                $attributes[ sanitize_key( $key ) ] = sanitize_title( $value );
+            }
+
+            $matrix[] = array(
+                'id'         => absint( $variation['variation_id'] ),
+                'attributes' => $attributes,
+                'in_stock'   => (bool) $variation['is_in_stock'],
+                'stock_qty'  => isset( $variation['max_qty'] ) && '' !== $variation['max_qty'] ? absint( $variation['max_qty'] ) : null,
+                'price'      => floatval( $variation['display_price'] ),
+                'price_html' => wp_kses_post( $variation['price_html'] ),
+            );
+        }
+
+        return $matrix;
+    }
+
+    /**
      * Incluir la plantilla de renderizado de un bloque
      *
      * @param string $block      Carpeta del bloque

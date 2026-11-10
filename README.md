@@ -138,6 +138,26 @@ Los pasos son idénticos al Selector de Tallas. Busca **"Selector de Colores TFM
 - **Mostrar nombre del color:** Activa el tooltip con el nombre del color.
 - **Mapa de colores:** Personaliza la asociación entre nombre de atributo y código hexadecimal de color.
 
+### Uso combinado con el carrito
+
+Para que el cliente elija talla y color y añada la combinación al carrito, coloque los dos selectores del mismo producto junto al formulario de WooCommerce. La forma más sencilla es el bloque **Producto individual** de WooCommerce (*Single Product*):
+
+**1.** Inserte el bloque **Producto individual** y elija el producto variable.
+
+**2.** Dentro del bloque, añada **Selector de Colores TFM** y **Selector de Tallas TFM** con el mismo ID de producto.
+
+**3.** Mantenga dentro del bloque el **Formulario de añadir al carrito** (*Add to Cart with Options*).
+
+Desde la versión 1.2.0, el coordinador de producto del plugin:
+
+- combina la talla y el color elegidos y resuelve la variación exacta;
+- marca con borde discontinuo las opciones que no existen o están agotadas con la elección del otro selector; siguen siendo pulsables y, si la combinación no tiene stock, se libera el otro atributo y se avisa al usuario;
+- rellena los desplegables nativos de WooCommerce, que quedan ocultos y siguen siendo la fuente de verdad del carrito, de modo que «Añadir al carrito» añade la combinación elegida.
+
+### Tienda de prueba para las evaluaciones
+
+La carpeta `herramientas/tfm-tienda-prueba/` contiene un plugin auxiliar, independiente de este, que crea en un clic la tienda de demostración de las pruebas de usabilidad del TFM: el producto variable «Camiseta Algodón Orgánico» (tallas S, M, L y XL, colores Azul Marino, Blanco y Negro, talla S agotada), dos productos de relleno, la ficha de prueba con los bloques y una portada. Se instala como cualquier plugin (archivo `tfm-tienda-prueba-1.0.0.zip` de la release) y se usa en **Herramientas → TFM: tienda de prueba**. También admite WP-CLI: `wp tfm-tienda crear` y `wp tfm-tienda eliminar`.
+
 ---
 
 ## Desarrollo local
@@ -221,12 +241,13 @@ Los endpoints son de solo lectura y exponen únicamente datos que ya son públic
 
 ### Verificación
 
-La versión 1.1.0 se ha verificado sobre WordPress 6.8.3 y WooCommerce 10.3.4:
+La versión 1.2.0 se ha verificado sobre WordPress 6.8.3 y WooCommerce 10.3.4:
 
 - Los dos bloques se registran y validan en el editor.
 - El frontend renderiza las tallas y colores, actualiza el precio, anuncia el stock y admite navegación por teclado.
+- Con los dos selectores y el formulario de WooCommerce en la misma página, la combinación elegida (por ejemplo, M + Azul Marino) es la que llega al carrito.
 - Las páginas sin bloques no cargan ningún recurso del plugin.
-- Auditoría de accesibilidad de Lighthouse sobre la página de prueba: 100/100.
+- Lighthouse 12.8 (móvil, cinco ejecuciones) sobre la ficha de prueba: accesibilidad 100/100; rendimiento 61/100 frente a 60/100 en la misma ficha con los desplegables nativos de WooCommerce.
 
 ---
 

@@ -51,8 +51,9 @@ if ( empty( $variations ) ) {
 }
 
 // Extraer colores únicos de las variaciones
-$colors = array();
-$seen   = array();
+$colors    = array();
+$seen      = array();
+$color_key = '';
 
 foreach ( $variations as $variation ) {
     $color_value = '';
@@ -60,6 +61,7 @@ foreach ( $variations as $variation ) {
     foreach ( array( 'attribute_pa_color', 'attribute_color', 'attribute_pa_colour', 'attribute_colour' ) as $key ) {
         if ( ! empty( $variation['attributes'][ $key ] ) ) {
             $color_value = $variation['attributes'][ $key ];
+            $color_key   = $key;
             break;
         }
     }
@@ -128,6 +130,8 @@ $wrapper_classes = implode(
     data-tfm-selector="color"
     data-product-id="<?php echo esc_attr( $product_id ); ?>"
     data-variations="<?php echo esc_attr( $variations_json ); ?>"
+    data-attribute-key="<?php echo esc_attr( $color_key ); ?>"
+    data-matrix="<?php echo esc_attr( wp_json_encode( TFM_Blocks::get_variation_matrix( $product ) ) ); ?>"
     data-show-stock="<?php echo esc_attr( $show_stock ? 'true' : 'false' ); ?>"
     data-show-price="<?php echo esc_attr( $show_price ? 'true' : 'false' ); ?>"
 >

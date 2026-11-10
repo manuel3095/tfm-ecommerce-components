@@ -47,19 +47,20 @@ if ( empty( $variations ) ) {
 }
 
 // Procesar variaciones para extraer tallas únicas
-$sizes = array();
-$seen  = array();
+$sizes    = array();
+$seen     = array();
+$size_key = '';
 
 foreach ( $variations as $variation ) {
     // Buscar el atributo de talla en diferentes nomenclaturas posibles
     $size_value = '';
 
-    if ( isset( $variation['attributes']['attribute_pa_size'] ) ) {
-        $size_value = $variation['attributes']['attribute_pa_size'];
-    } elseif ( isset( $variation['attributes']['attribute_talla'] ) ) {
-        $size_value = $variation['attributes']['attribute_talla'];
-    } elseif ( isset( $variation['attributes']['attribute_pa_talla'] ) ) {
-        $size_value = $variation['attributes']['attribute_pa_talla'];
+    foreach ( array( 'attribute_pa_size', 'attribute_talla', 'attribute_pa_talla', 'attribute_size' ) as $key ) {
+        if ( ! empty( $variation['attributes'][ $key ] ) ) {
+            $size_value = $variation['attributes'][ $key ];
+            $size_key   = $key;
+            break;
+        }
     }
 
     if ( empty( $size_value ) ) {
@@ -124,6 +125,8 @@ $wrapper_classes = implode(
     data-tfm-selector="size"
     data-product-id="<?php echo esc_attr( $product_id ); ?>"
     data-variations="<?php echo esc_attr( $variations_json ); ?>"
+    data-attribute-key="<?php echo esc_attr( $size_key ); ?>"
+    data-matrix="<?php echo esc_attr( wp_json_encode( TFM_Blocks::get_variation_matrix( $product ) ) ); ?>"
     data-show-stock="<?php echo esc_attr( $show_stock ? 'true' : 'false' ); ?>"
     data-show-price="<?php echo esc_attr( $show_price ? 'true' : 'false' ); ?>"
 >

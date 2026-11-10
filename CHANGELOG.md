@@ -1,5 +1,14 @@
 # Registro de cambios
 
+## 1.2.0
+
+- Nuevo coordinador de producto (patrón Mediator) en `frontend.js`: cuando una página contiene el selector de tallas y el de colores del mismo producto, combina ambas selecciones y resuelve la variación exacta. En la versión 1.1.0 cada selector enviaba su propia variación representativa, de modo que la talla y el color elegidos podían no coincidir con la variación añadida al carrito.
+- Disponibilidad cruzada: al elegir un color se marcan las tallas que no existen o están agotadas en ese color, y viceversa. Las opciones siguen siendo pulsables; si la combinación no tiene stock, se libera el otro atributo y se avisa al usuario.
+- Precio y stock se actualizan con los datos de la combinación completa.
+- Sincronización con el formulario de variaciones de WooCommerce: los selectores del plugin rellenan los desplegables nativos, que quedan ocultos y siguen funcionando como fuente de verdad del carrito. «Añadir al carrito» añade la combinación elegida.
+- Los bloques exponen la matriz completa de variaciones (`data-matrix`) y la clave del atributo (`data-attribute-key`), generadas por `TFM_Blocks::get_variation_matrix()`.
+- El evento `tfm:variationSelected` se emite al resolverse la combinación e incluye `attributes`, `inStock`, `price` y `priceHtml`.
+
 ## 1.1.0
 
 - Estructura de carpetas corregida: las clases PHP se cargan desde `includes/` y cada bloque tiene su `block.json` en `blocks/<bloque>/`. La versión 1.0.0 del repositorio no podía activarse por rutas inexistentes.

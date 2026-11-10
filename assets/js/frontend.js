@@ -7,10 +7,13 @@
  *   configuración (clases, atributo de datos, textos) y comparte la lógica común.
  * - Observer: comunicación entre el selector y el resto de la página
  *   mediante eventos personalizados (CustomEvent).
+ * - Mediator: el coordinador de producto combina las selecciones de todos
+ *   los selectores de un mismo producto y resuelve la variación exacta.
  * - Module: encapsulación mediante IIFE.
  *
  * @package TFM_Ecommerce_Components
  * @since 1.1.0
+ * @version 1.2.0
  */
 
 ( function( window, document ) {
@@ -76,6 +79,7 @@
 
             this.initOptions( component, strategy, variations );
             this.initStockValidation( component, strategy, productId );
+            ProductCoordinator.register( component, strategy );
         },
 
         /**
@@ -136,14 +140,18 @@
                         this.updateStockMessage( stockEl, strategy, variation.in_stock, variation.stock_qty );
                     }
 
+                    const value = option.dataset[ strategy.valueKey ] || option.dataset.value;
+
                     this.dispatchSelectionEvent( component, strategy, {
                         productId:   parseInt( component.dataset.productId, 10 ),
                         variationId: variationId,
                         attribute:   strategy.valueKey,
-                        value:       option.dataset[ strategy.valueKey ] || option.dataset.value,
+                        value:       value,
                         price:       price,
                         priceHtml:   priceHtml,
                     } );
+
+                    ProductCoordinator.select( component, value );
                 } );
 
                 option.addEventListener( 'keydown', event => {
@@ -235,17 +243,15 @@
         },
 
         /**
-         * Emitir eventos personalizados de selección (patrón Observer)
+         * Emitir el evento de selección del componente (patrón Observer).
+         * El evento global tfm:variationSelected lo emite el coordinador
+         * cuando la combinación de atributos identifica una variación.
          */
         dispatchSelectionEvent( component, strategy, detail ) {
             component.dispatchEvent( new CustomEvent( strategy.eventName, {
                 bubbles:    true,
                 cancelable: true,
                 detail:     detail,
-            } ) );
-
-            document.dispatchEvent( new CustomEvent( 'tfm:variationSelected', {
-                detail: detail,
             } ) );
         },
 
@@ -294,6 +300,252 @@
         },
     };
 
+
+    /**
+     * Coordinador de producto (patrón Mediator)
+     *
+     * Cada selector conoce solo su atributo. El coordinador agrupa los
+     * selectores de un mismo producto, guarda la selección de cada atributo
+     * y, a partir de la matriz completa de variaciones (data-matrix):
+     * 1. marca las opciones que no existen o están agotadas con la selección
+     *    actual del otro atributo (disponibilidad cruzada);
+     * 2. resuelve la variación exacta y actualiza precio y stock;
+     * 3. sincroniza el formulario de variaciones de WooCommerce para que
+     *    «Añadir al carrito» añada la combinación elegida.
+     */
+    const ProductCoordinator = {
+
+        groups: {},
+
+        /**
+         * Registrar un componente en el grupo de su producto
+         */
+        register( component, strategy ) {
+            const productId = component.dataset.productId;
+            const key       = component.dataset.attributeKey;
+            let matrix      = [];
+
+            try {
+                matrix = JSON.parse( component.dataset.matrix || '[]' );
+            } catch ( error ) {
+                matrix = [];
+            }
+
+            if ( ! key || ! matrix.length ) {
+                return;
+            }
+
+            if ( ! this.groups[ productId ] ) {
+                this.groups[ productId ] = { matrix, components: [], selection: {} };
+            }
+
+            this.groups[ productId ].components.push( { el: component, strategy, key } );
+            this.markManagedForm( productId );
+        },
+
+        /**
+         * Valor de una opción según la estrategia del selector
+         */
+        optionValue( option, strategy ) {
+            return option.dataset[ strategy.valueKey ] || option.dataset.value;
+        },
+
+        /**
+         * ¿La variación coincide con la selección? Un atributo vacío en la
+         * variación significa «cualquier valor» en WooCommerce.
+         */
+        matches( variation, selection ) {
+            return Object.keys( selection ).every( key => {
+                const wanted = selection[ key ];
+                const actual = variation.attributes[ key ];
+                return ! wanted || ! actual || actual === wanted;
+            } );
+        },
+
+        /**
+         * Registrar la selección de un componente y recalcular el grupo
+         */
+        select( component, value ) {
+            const group = this.groups[ component.dataset.productId ];
+
+            if ( ! group ) {
+                return;
+            }
+
+            const entry = group.components.find( item => item.el === component );
+            group.selection[ entry.key ] = value;
+
+            // Si la combinación no tiene stock, se libera el otro atributo
+            const available = group.matrix.some( v => v.in_stock && this.matches( v, group.selection ) );
+
+            if ( ! available ) {
+                group.components.forEach( item => {
+                    if ( item.key !== entry.key && group.selection[ item.key ] ) {
+                        group.selection[ item.key ] = null;
+                        this.clearComponent( item );
+                    }
+                } );
+            }
+
+            this.refreshAvailability( group );
+            this.resolve( component.dataset.productId, group );
+        },
+
+        /**
+         * Quitar la selección visual de un componente y avisar al usuario
+         */
+        clearComponent( item ) {
+            item.el.querySelectorAll( '.' + item.strategy.option ).forEach( option => {
+                option.setAttribute( 'aria-checked', 'false' );
+                option.classList.remove( item.strategy.option + '--selected' );
+            } );
+
+            const nameEl  = item.el.querySelector( '.' + item.strategy.prefix + '__selected-name' );
+            const stockEl = item.el.querySelector( '.' + item.strategy.prefix + '__stock-message' );
+
+            const priceEl = item.el.querySelector( '.' + item.strategy.prefix + '__price' );
+
+            if ( nameEl ) {
+                nameEl.textContent = '';
+            }
+
+            if ( priceEl ) {
+                priceEl.textContent = item.strategy.valueKey === 'size'
+                    ? 'Selecciona una talla para ver el precio'
+                    : 'Selecciona un color para ver el precio';
+            }
+
+            if ( stockEl ) {
+                stockEl.className = item.strategy.prefix + '__stock-message';
+                stockEl.textContent = item.strategy.valueKey === 'size'
+                    ? 'Esa talla no está disponible en este color. Elige otra talla.'
+                    : 'Ese color no está disponible en esta talla. Elige otro color.';
+            }
+        },
+
+        /**
+         * Disponibilidad cruzada: una opción sigue activa si existe alguna
+         * variación con stock para ella; se marca como no disponible si no
+         * la hay con la selección actual del resto de atributos.
+         */
+        refreshAvailability( group ) {
+            group.components.forEach( item => {
+                const others = Object.assign( {}, group.selection );
+                delete others[ item.key ];
+
+                item.el.querySelectorAll( '.' + item.strategy.option ).forEach( option => {
+                    if ( option.disabled ) {
+                        return;
+                    }
+
+                    const value = this.optionValue( option, item.strategy );
+                    const combo = group.matrix.some( v =>
+                        v.in_stock &&
+                        ( ! v.attributes[ item.key ] || v.attributes[ item.key ] === value ) &&
+                        this.matches( v, others )
+                    );
+
+                    if ( ! option.dataset.baseLabel ) {
+                        option.dataset.baseLabel = option.getAttribute( 'aria-label' ) || '';
+                    }
+
+                    option.classList.toggle( item.strategy.option + '--unavailable', ! combo );
+                    option.setAttribute(
+                        'aria-label',
+                        combo ? option.dataset.baseLabel : option.dataset.baseLabel + ' - No disponible con la selección actual'
+                    );
+                } );
+            } );
+        },
+
+        /**
+         * Resolver la variación y propagar precio, stock y formulario
+         */
+        resolve( productId, group ) {
+            const complete = group.components.every( item => group.selection[ item.key ] );
+            const candidates = group.matrix.filter( v => this.matches( v, group.selection ) );
+            const variation = candidates.find( v => v.in_stock ) || candidates[ 0 ];
+
+            this.syncForm( productId, group.selection );
+
+            if ( ! complete || ! variation ) {
+                return;
+            }
+
+            group.components.forEach( item => {
+                const priceEl = item.el.querySelector( '.' + item.strategy.prefix + '__price' );
+                const stockEl = item.el.querySelector( '.' + item.strategy.prefix + '__stock-message' );
+
+                if ( priceEl && item.el.dataset.showPrice === 'true' ) {
+                    TFMVariantSelector.updatePrice( priceEl, variation.price_html );
+                }
+
+                if ( stockEl && item.el.dataset.showStock === 'true' ) {
+                    TFMVariantSelector.updateStockMessage( stockEl, item.strategy, variation.in_stock, variation.stock_qty );
+                }
+            } );
+
+            document.dispatchEvent( new CustomEvent( 'tfm:variationSelected', {
+                detail: {
+                    productId:   parseInt( productId, 10 ),
+                    variationId: variation.id,
+                    attributes:  Object.assign( {}, group.selection ),
+                    inStock:     variation.in_stock,
+                    price:       variation.price,
+                    priceHtml:   variation.price_html,
+                },
+            } ) );
+        },
+
+        /**
+         * Formulario de variaciones de WooCommerce del mismo producto
+         */
+        findForm( productId ) {
+            return document.querySelector( `form.variations_form[data-product_id="${ productId }"]` );
+        },
+
+        /**
+         * Los selectores del plugin sustituyen a los desplegables nativos:
+         * se ocultan los de WooCommerce, que siguen funcionando por debajo.
+         */
+        markManagedForm( productId ) {
+            const form = this.findForm( productId );
+
+            if ( form ) {
+                form.classList.add( 'tfm-managed-form' );
+            }
+        },
+
+        /**
+         * Copiar la selección a los <select> de WooCommerce y notificarles
+         * el cambio; WooCommerce calcula entonces variation_id y habilita
+         * el botón «Añadir al carrito».
+         */
+        syncForm( productId, selection ) {
+            const form = this.findForm( productId );
+
+            if ( ! form ) {
+                return;
+            }
+
+            Object.keys( selection ).forEach( key => {
+                const select = form.querySelector( `select[name="${ key }"]` );
+
+                if ( ! select ) {
+                    return;
+                }
+
+                select.value = selection[ key ] || '';
+
+                if ( window.jQuery ) {
+                    window.jQuery( select ).trigger( 'change' );
+                } else {
+                    select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+                }
+            } );
+        },
+    };
+
     /**
      * Integración con el formulario de variaciones de WooCommerce:
      * actualiza el campo variation_id para que «Añadir al carrito» funcione.
@@ -321,7 +573,8 @@
     }
 
     // Exponer el módulo para extensibilidad (alias retrocompatible)
-    window.TFMVariantSelector = TFMVariantSelector;
-    window.TFMSizeSelector    = TFMVariantSelector;
+    window.TFMVariantSelector  = TFMVariantSelector;
+    window.TFMSizeSelector     = TFMVariantSelector;
+    window.TFMProductCoordinator = ProductCoordinator;
 
 } )( window, document );
